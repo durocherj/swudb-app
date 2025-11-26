@@ -1,7 +1,10 @@
 import { apiClient } from './client';
 import { Card, CardFilters, PaginatedResponse, CardSet } from '../types';
 
-// Card data with SWUDB image URLs
+// Helper to generate placeholder images
+const getPlaceholderImage = (seed: string) => `https://picsum.photos/seed/${seed}/300/420`;
+
+// Card data with placeholder images
 const MOCK_CARDS: Card[] = [
   {
     id: 'SOR_005',
@@ -19,7 +22,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '005',
     frontText: 'Action: If you control 3 or more resources, flip this leader.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/005.webp',
+    imageUrl: getPlaceholderImage('luke-skywalker'),
   },
   {
     id: 'SOR_010',
@@ -37,7 +40,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '010',
     frontText: 'Action: If you have dealt 5 or more damage this phase, flip this leader.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/010.webp',
+    imageUrl: getPlaceholderImage('darth-vader'),
   },
   {
     id: 'SOR_060',
@@ -55,7 +58,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '060',
     frontText: 'When Played: You may give an Experience token to this unit.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/060.webp',
+    imageUrl: getPlaceholderImage('rebel-pathfinder'),
   },
   {
     id: 'SOR_079',
@@ -74,7 +77,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '079',
     frontText: 'Ambush. When Played: Ready another friendly unit.',
     keywords: ['Ambush'],
-    imageUrl: 'https://swudb.com/cards/SOR/079.webp',
+    imageUrl: getPlaceholderImage('millennium-falcon'),
   },
   {
     id: 'SOR_139',
@@ -89,7 +92,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '139',
     frontText: 'Deal 3 damage to a ground unit.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/139.webp',
+    imageUrl: getPlaceholderImage('force-choke'),
   },
   {
     id: 'SOR_053',
@@ -104,7 +107,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '053',
     frontText: 'Attached unit gets +3/+1.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/053.webp',
+    imageUrl: getPlaceholderImage('lukes-lightsaber'),
   },
   {
     id: 'SOR_023',
@@ -120,7 +123,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '023',
     frontText: 'Epic Action: Give a unit +2/+2 for this phase.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/023.webp',
+    imageUrl: getPlaceholderImage('dagobah-swamp'),
   },
   {
     id: 'SHD_009',
@@ -138,7 +141,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '009',
     frontText: 'When you play a Bounty Hunter unit, you may exhaust this leader to draw a card.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SHD/009.webp',
+    imageUrl: getPlaceholderImage('boba-fett'),
   },
   {
     id: 'SOR_035',
@@ -157,7 +160,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '035',
     frontText: 'When Played: Each friendly unit gets +1/+1 for this phase.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/035.webp',
+    imageUrl: getPlaceholderImage('admiral-ackbar'),
   },
   {
     id: 'SOR_130',
@@ -172,7 +175,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '130',
     frontText: 'Deal 2 damage to each enemy ground unit and each enemy space unit.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/130.webp',
+    imageUrl: getPlaceholderImage('overwhelming-barrage'),
   },
   {
     id: 'SOR_115',
@@ -190,7 +193,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '115',
     frontText: 'When Defeated: You may put Superlaser Technician into play as a resource.',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/115.webp',
+    imageUrl: getPlaceholderImage('superlaser-tech'),
   },
   {
     id: 'SOR_081',
@@ -208,7 +211,7 @@ const MOCK_CARDS: Card[] = [
     cardNumber: '081',
     frontText: '',
     keywords: [],
-    imageUrl: 'https://swudb.com/cards/SOR/081.webp',
+    imageUrl: getPlaceholderImage('x-wing'),
   },
 ];
 
@@ -218,21 +221,21 @@ const MOCK_SETS: CardSet[] = [
     name: 'Spark of Rebellion',
     releaseDate: '2024-03-08',
     totalCards: 252,
-    imageUrl: 'https://swudb.com/images/sets/SOR.png',
+    imageUrl: getPlaceholderImage('set-sor'),
   },
   {
     code: 'SHD',
     name: 'Shadows of the Galaxy',
     releaseDate: '2024-07-12',
     totalCards: 262,
-    imageUrl: 'https://swudb.com/images/sets/SHD.png',
+    imageUrl: getPlaceholderImage('set-shd'),
   },
   {
     code: 'TWI',
     name: 'Twilight of the Republic',
     releaseDate: '2024-11-08',
     totalCards: 256,
-    imageUrl: 'https://swudb.com/images/sets/TWI.png',
+    imageUrl: getPlaceholderImage('set-twi'),
   },
 ];
 
@@ -248,8 +251,7 @@ export const cardsApi = {
       });
       return response;
     } catch (error) {
-      // Fallback to mock data for development
-      console.log('Using mock card data');
+      // Fallback to mock data
       let filteredCards = [...MOCK_CARDS];
 
       if (filters.search) {

@@ -7,7 +7,7 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      timeout: 15000,
+      timeout: 5000, // Shorter timeout since we expect it to fail
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -16,22 +16,15 @@ class ApiClient {
 
     // Request interceptor
     this.client.interceptors.request.use(
-      (config) => {
-        // Add any auth tokens or custom headers here
-        return config;
-      },
+      (config) => config,
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor
+    // Response interceptor - silently handle errors
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.response) {
-          console.error('API Error:', error.response.status, error.response.data);
-        } else if (error.request) {
-          console.error('Network Error:', error.message);
-        }
+        // Silently reject - the calling code will fall back to mock data
         return Promise.reject(error);
       }
     );
@@ -59,5 +52,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
-
-
