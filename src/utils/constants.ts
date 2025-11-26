@@ -1,6 +1,7 @@
 import { Aspect, CardType, Rarity } from '../types';
 
-export const API_BASE_URL = 'https://api.swudb.com';
+export const API_BASE_URL = 'https://swudb.com/api';
+export const IMAGE_BASE_URL = 'https://swudb.com';
 
 export const CARD_TYPES: CardType[] = [
   'Leader',

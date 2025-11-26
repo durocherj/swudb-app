@@ -137,9 +137,9 @@ export function DeckEditorScreen() {
             {item.card.name}
           </Text>
           <View style={styles.aspectDots}>
-            {item.card.aspects.map((aspect) => (
+            {item.card.aspects.map((aspect, index) => (
               <View
-                key={aspect}
+                key={index}
                 style={[styles.aspectDot, { backgroundColor: aspectColors[aspect] }]}
               />
             ))}

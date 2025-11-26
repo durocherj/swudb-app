@@ -38,33 +38,43 @@ export const theme = {
     onSurfaceVariant: '#B0B0B0',
     outline: '#404040',
     error: '#CF6679',
-    // Custom colors for aspects
-    vigilance: '#4A90D9',
-    command: '#2ECC71',
-    aggression: '#E74C3C',
-    cunning: '#F1C40F',
-    villainy: '#9B59B6',
-    heroism: '#3498DB',
+    // Custom colors for aspects (matching actual SWU card colors)
+    vigilance: '#3B82F6',  // Blue
+    command: '#22C55E',    // Green
+    aggression: '#EF4444', // Red
+    cunning: '#EAB308',    // Yellow
+    villainy: '#404040',   // Dark Gray (substituting for Black)
+    heroism: '#FFFFFF',    // White
   },
   fonts: configureFonts({ config: fontConfig }),
   roundness: 8,
 };
 
 export const aspectColors: Record<string, string> = {
-  Vigilance: '#4A90D9',
-  Command: '#2ECC71',
-  Aggression: '#E74C3C',
-  Cunning: '#F1C40F',
-  Villainy: '#9B59B6',
-  Heroism: '#3498DB',
+  Vigilance: '#3B82F6',  // Blue
+  Command: '#22C55E',    // Green
+  Aggression: '#EF4444', // Red
+  Cunning: '#EAB308',    // Yellow
+  Villainy: '#404040',   // Dark Gray (substituting for Black)
+  Heroism: '#FFFFFF',    // White
 };
 
 export const rarityColors: Record<string, string> = {
-  Common: '#808080',
-  Uncommon: '#4CAF50',
-  Rare: '#2196F3',
-  Legendary: '#FFD700',
-  Special: '#9C27B0',
+  Starter: '#FF00FF',   // Magenta
+  Common: '#CD7F32',    // Bronze
+  Uncommon: '#C0C0C0',  // Silver
+  Rare: '#FFD700',      // Gold
+  Legendary: '#3B82F6', // Blue
+  Special: '#FF00FF',   // Magenta (same as Starter)
+};
+
+export const rarityLetters: Record<string, string> = {
+  Starter: 'S',
+  Common: 'C',
+  Uncommon: 'U',
+  Rare: 'R',
+  Legendary: 'L',
+  Special: 'S',
 };
 
 

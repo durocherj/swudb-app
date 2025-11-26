@@ -7,7 +7,7 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      timeout: 5000, // Shorter timeout since we expect it to fail
+      timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -32,6 +32,11 @@ class ApiClient {
 
   async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
     const response = await this.client.get<T>(endpoint, { params });
+    return response.data;
+  }
+
+  async getRaw<T>(url: string): Promise<T> {
+    const response = await this.client.get<T>(url);
     return response.data;
   }
 

@@ -1,347 +1,292 @@
 import { apiClient } from './client';
-import { Card, CardFilters, PaginatedResponse, CardSet } from '../types';
+import { Card, CardFilters, PaginatedResponse, CardSet, Aspect, CardType, Rarity } from '../types';
 
-// Helper to generate placeholder images
-const getPlaceholderImage = (seed: string) => `https://picsum.photos/seed/${seed}/300/420`;
+const IMAGE_BASE_URL = 'https://swudb.com/images';
 
-// Card data with placeholder images
-const MOCK_CARDS: Card[] = [
-  {
-    id: 'SOR_005',
-    name: 'Luke Skywalker',
-    subtitle: 'Faithful Friend',
-    type: 'Leader',
-    aspects: ['Vigilance', 'Heroism'],
-    traits: ['Force', 'Rebel'],
-    cost: 0,
-    power: 4,
-    hp: 7,
-    rarity: 'Legendary',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '005',
-    frontText: 'Action: If you control 3 or more resources, flip this leader.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('luke-skywalker'),
-  },
-  {
-    id: 'SOR_010',
-    name: 'Darth Vader',
-    subtitle: 'Dark Lord of the Sith',
-    type: 'Leader',
-    aspects: ['Aggression', 'Villainy'],
-    traits: ['Force', 'Imperial', 'Sith'],
-    cost: 0,
-    power: 5,
-    hp: 8,
-    rarity: 'Legendary',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '010',
-    frontText: 'Action: If you have dealt 5 or more damage this phase, flip this leader.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('darth-vader'),
-  },
-  {
-    id: 'SOR_060',
-    name: 'Rebel Pathfinder',
-    type: 'Unit',
-    aspects: ['Command'],
-    traits: ['Rebel', 'Trooper'],
-    cost: 2,
-    power: 2,
-    hp: 3,
-    arenaType: 'Ground',
-    rarity: 'Common',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '060',
-    frontText: 'When Played: You may give an Experience token to this unit.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('rebel-pathfinder'),
-  },
-  {
-    id: 'SOR_079',
-    name: 'Millennium Falcon',
-    subtitle: 'Piece of Junk',
-    type: 'Unit',
-    aspects: ['Cunning', 'Heroism'],
-    traits: ['Vehicle', 'Rebel'],
-    cost: 6,
-    power: 5,
-    hp: 6,
-    arenaType: 'Space',
-    rarity: 'Legendary',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '079',
-    frontText: 'Ambush. When Played: Ready another friendly unit.',
-    keywords: ['Ambush'],
-    imageUrl: getPlaceholderImage('millennium-falcon'),
-  },
-  {
-    id: 'SOR_139',
-    name: 'Force Choke',
-    type: 'Event',
-    aspects: ['Aggression', 'Villainy'],
-    traits: ['Force'],
-    cost: 3,
-    rarity: 'Rare',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '139',
-    frontText: 'Deal 3 damage to a ground unit.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('force-choke'),
-  },
-  {
-    id: 'SOR_053',
-    name: 'Luke\'s Lightsaber',
-    type: 'Upgrade',
-    aspects: ['Vigilance', 'Heroism'],
-    traits: ['Weapon', 'Lightsaber'],
-    cost: 2,
-    rarity: 'Rare',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '053',
-    frontText: 'Attached unit gets +3/+1.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('lukes-lightsaber'),
-  },
-  {
-    id: 'SOR_023',
-    name: 'Dagobah Swamp',
-    type: 'Base',
-    aspects: ['Vigilance'],
-    traits: ['Location'],
-    cost: 0,
-    hp: 30,
-    rarity: 'Rare',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '023',
-    frontText: 'Epic Action: Give a unit +2/+2 for this phase.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('dagobah-swamp'),
-  },
-  {
-    id: 'SHD_009',
-    name: 'Boba Fett',
-    subtitle: 'Collecting the Bounty',
-    type: 'Leader',
-    aspects: ['Cunning', 'Villainy'],
-    traits: ['Bounty Hunter', 'Mandalorian'],
-    cost: 0,
-    power: 4,
-    hp: 7,
-    rarity: 'Legendary',
-    set: 'Shadows of the Galaxy',
-    setCode: 'SHD',
-    cardNumber: '009',
-    frontText: 'When you play a Bounty Hunter unit, you may exhaust this leader to draw a card.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('boba-fett'),
-  },
-  {
-    id: 'SOR_035',
-    name: 'Admiral Ackbar',
-    subtitle: 'Brilliant Strategist',
-    type: 'Unit',
-    aspects: ['Command', 'Heroism'],
-    traits: ['Rebel', 'Official'],
-    cost: 5,
-    power: 2,
-    hp: 4,
-    arenaType: 'Ground',
-    rarity: 'Rare',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '035',
-    frontText: 'When Played: Each friendly unit gets +1/+1 for this phase.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('admiral-ackbar'),
-  },
-  {
-    id: 'SOR_130',
-    name: 'Overwhelming Barrage',
-    type: 'Event',
-    aspects: ['Command'],
-    traits: ['Tactic'],
-    cost: 5,
-    rarity: 'Rare',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '130',
-    frontText: 'Deal 2 damage to each enemy ground unit and each enemy space unit.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('overwhelming-barrage'),
-  },
-  {
-    id: 'SOR_115',
-    name: 'Superlaser Technician',
-    type: 'Unit',
-    aspects: ['Villainy'],
-    traits: ['Imperial', 'Trooper'],
-    cost: 1,
-    power: 1,
-    hp: 1,
-    arenaType: 'Ground',
-    rarity: 'Common',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '115',
-    frontText: 'When Defeated: You may put Superlaser Technician into play as a resource.',
-    keywords: [],
-    imageUrl: getPlaceholderImage('superlaser-tech'),
-  },
-  {
-    id: 'SOR_081',
-    name: 'X-Wing',
-    type: 'Unit',
-    aspects: ['Heroism'],
-    traits: ['Vehicle', 'Rebel', 'Fighter'],
-    cost: 3,
-    power: 2,
-    hp: 3,
-    arenaType: 'Space',
-    rarity: 'Common',
-    set: 'Spark of Rebellion',
-    setCode: 'SOR',
-    cardNumber: '081',
+// SWUDB API response types
+interface SwudbCardResponse {
+  variantId: number;
+  cardId: number;
+  printingId: number;
+  expansionAbbreviation: string;
+  cardNumber: string;
+  releaseDate: string;
+  expansionType: number;
+  ownedCount: number;
+  groupOwnedCount: number;
+  frontImagePath: string;
+  backImagePath?: string;
+  isFrontPortrait: boolean;
+  isBackPortrait: boolean;
+  foil: boolean;
+  isNumberDoubleFoiled: boolean;
+  isNumberDoubleStamped: boolean;
+  stamp?: string;
+  cardName: string;
+  cardTitle?: string;
+  isUnique: boolean;
+  cost: number;
+  arena: number; // 0 = Ground, 6 = Space
+  power: number;
+  hp: number;
+  hpBonus?: number;
+  powerBonus?: number;
+  aspectIds: number[];
+  frontsideAspectIds: number[];
+  backsideAspectIds: number[];
+  cardType: number;
+  isToken: boolean;
+  variantType: number;
+  traits: string;
+  rarity: number;
+  artist: string;
+  alternativeDeckMaximum?: number;
+  priceChangeTime?: string;
+  lowPrice: number;
+  marketPrice: number;
+  tcgpUrl?: string;
+}
+
+interface SwudbSetResponse {
+  expansionId: number;
+  expansionAbbreviation: string;
+  expansionName: string;
+  logoFilePath: string;
+  expansionType: number;
+  releaseDate: string;
+  prereleaseDate: string;
+  cardCount: number;
+  previewedCount: number;
+  formatLegality: number;
+  children?: SwudbSetResponse[];
+}
+
+interface SwudbSearchResponse {
+  explanation: string;
+  validQuery: boolean;
+  printings: SwudbCardResponse[];
+}
+
+// Aspect ID mapping (verified from SWUDB API)
+const ASPECT_MAP: Record<number, Aspect> = {
+  1: 'Aggression',  // Red
+  2: 'Command',     // Green
+  3: 'Cunning',     // Yellow
+  4: 'Vigilance',   // Blue
+  5: 'Heroism',     // White
+  6: 'Villainy',    // Dark Gray
+};
+
+// Card type mapping (verified from API - 0=Leader, etc.)
+const CARD_TYPE_MAP: Record<number, CardType> = {
+  0: 'Leader',
+  1: 'Base',
+  2: 'Unit',
+  3: 'Event',
+  4: 'Upgrade',
+};
+
+// Rarity mapping (verified from API)
+const RARITY_MAP: Record<number, Rarity> = {
+  1: 'Common',
+  2: 'Uncommon',
+  3: 'Rare',
+  4: 'Legendary',
+  5: 'Special',
+};
+
+// Convert image path from API format to full URL
+function getImageUrl(imagePath: string | undefined): string {
+  if (!imagePath) return '';
+  // Replace ~/ with /images/ prefix and prepend base URL
+  // API returns: ~/cards/SOR/005.png
+  // We need: https://swudb.com/images/cards/SOR/005.png
+  const cleanPath = imagePath.replace('~/', '/');
+  return `${IMAGE_BASE_URL}${cleanPath}`;
+}
+
+// Convert SWUDB card response to our Card type
+function convertSwudbCard(swudbCard: SwudbCardResponse): Card {
+  // Determine arena type
+  let arenaType: 'Ground' | 'Space' | undefined;
+  if (swudbCard.cardType === 2) { // Only units have arena
+    arenaType = swudbCard.arena === 6 ? 'Space' : 'Ground';
+  }
+  
+  return {
+    id: `${swudbCard.expansionAbbreviation}_${swudbCard.cardNumber}`,
+    name: swudbCard.cardName,
+    subtitle: swudbCard.cardTitle || undefined,
+    type: CARD_TYPE_MAP[swudbCard.cardType] || 'Unit',
+    aspects: (swudbCard.aspectIds || []).map(id => ASPECT_MAP[id]).filter(Boolean),
+    traits: swudbCard.traits ? swudbCard.traits.split(',').map(t => t.trim()).filter(Boolean) : [],
+    cost: swudbCard.cost || 0,
+    power: swudbCard.power > 0 ? swudbCard.power : undefined,
+    hp: swudbCard.hp > 0 ? swudbCard.hp : undefined,
+    arenaType,
+    rarity: RARITY_MAP[swudbCard.rarity] || 'Common',
+    set: swudbCard.expansionAbbreviation,
+    setCode: swudbCard.expansionAbbreviation,
+    cardNumber: swudbCard.cardNumber,
+    artist: swudbCard.artist || undefined,
     frontText: '',
     keywords: [],
-    imageUrl: getPlaceholderImage('x-wing'),
-  },
-];
+    imageUrl: getImageUrl(swudbCard.frontImagePath),
+    backImageUrl: swudbCard.backImagePath ? getImageUrl(swudbCard.backImagePath) : undefined,
+    price: swudbCard.marketPrice > 0 ? {
+      market: swudbCard.marketPrice,
+      low: swudbCard.lowPrice || 0,
+      mid: swudbCard.marketPrice,
+      high: swudbCard.marketPrice,
+      currency: 'USD',
+      lastUpdated: swudbCard.priceChangeTime || new Date().toISOString(),
+    } : undefined,
+  };
+}
 
-const MOCK_SETS: CardSet[] = [
-  {
-    code: 'SOR',
-    name: 'Spark of Rebellion',
-    releaseDate: '2024-03-08',
-    totalCards: 252,
-    imageUrl: getPlaceholderImage('set-sor'),
-  },
-  {
-    code: 'SHD',
-    name: 'Shadows of the Galaxy',
-    releaseDate: '2024-07-12',
-    totalCards: 262,
-    imageUrl: getPlaceholderImage('set-shd'),
-  },
-  {
-    code: 'TWI',
-    name: 'Twilight of the Republic',
-    releaseDate: '2024-11-08',
-    totalCards: 256,
-    imageUrl: getPlaceholderImage('set-twi'),
-  },
-];
+// Convert SWUDB set response to our CardSet type
+function convertSwudbSet(swudbSet: SwudbSetResponse): CardSet {
+  return {
+    code: swudbSet.expansionAbbreviation,
+    name: swudbSet.expansionName,
+    releaseDate: swudbSet.releaseDate,
+    totalCards: swudbSet.cardCount || swudbSet.previewedCount,
+    imageUrl: swudbSet.logoFilePath ? `https://swudb.com/images/${swudbSet.logoFilePath}` : undefined,
+  };
+}
+
+// Deduplicate cards by cardId (keep first printing of each unique card)
+function deduplicateCards(cards: SwudbCardResponse[]): SwudbCardResponse[] {
+  const seen = new Set<number>();
+  return cards.filter(card => {
+    if (seen.has(card.cardId)) {
+      return false;
+    }
+    seen.add(card.cardId);
+    return true;
+  });
+}
 
 export const cardsApi = {
   // Search cards with filters
   async searchCards(filters: Partial<CardFilters>, page = 1, limit = 20): Promise<PaginatedResponse<Card>> {
     try {
-      // Try real API first
-      const response = await apiClient.get<PaginatedResponse<Card>>('/cards', {
-        ...filters,
-        page,
-        limit,
-      });
-      return response;
-    } catch (error) {
-      // Fallback to mock data
-      let filteredCards = [...MOCK_CARDS];
-
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredCards = filteredCards.filter(
-          (card) =>
-            card.name.toLowerCase().includes(searchLower) ||
-            card.subtitle?.toLowerCase().includes(searchLower) ||
-            card.frontText?.toLowerCase().includes(searchLower)
-        );
+      // Build search query for SWUDB syntax
+      const queryParts: string[] = [];
+      
+      // Add search text
+      if (filters.search && filters.search.trim()) {
+        queryParts.push(filters.search.trim());
       }
-
+      
+      // Add type filter
       if (filters.types && filters.types.length > 0) {
-        filteredCards = filteredCards.filter((card) => filters.types!.includes(card.type));
+        const typeQuery = filters.types.map(t => `type:${t.toLowerCase()}`).join(' OR ');
+        queryParts.push(`(${typeQuery})`);
       }
-
+      
+      // Add aspect filter
       if (filters.aspects && filters.aspects.length > 0) {
-        filteredCards = filteredCards.filter((card) =>
-          card.aspects.some((aspect) => filters.aspects!.includes(aspect))
-        );
+        const aspectQuery = filters.aspects.map(a => `aspect:${a.toLowerCase()}`).join(' OR ');
+        queryParts.push(`(${aspectQuery})`);
       }
-
+      
+      // Add rarity filter
       if (filters.rarities && filters.rarities.length > 0) {
-        filteredCards = filteredCards.filter((card) => filters.rarities!.includes(card.rarity));
+        const rarityQuery = filters.rarities.map(r => `rarity:${r.toLowerCase()}`).join(' OR ');
+        queryParts.push(`(${rarityQuery})`);
       }
-
+      
+      // Add set filter
       if (filters.sets && filters.sets.length > 0) {
-        filteredCards = filteredCards.filter((card) => filters.sets!.includes(card.setCode));
+        const setQuery = filters.sets.map(s => `set:${s}`).join(' OR ');
+        queryParts.push(`(${setQuery})`);
       }
-
-      if (filters.costMin !== undefined) {
-        filteredCards = filteredCards.filter((card) => card.cost >= filters.costMin!);
+      
+      // Build final query - if empty, search for all non-token cards
+      let searchQuery = queryParts.length > 0 ? queryParts.join(' ') : 'type:unit OR type:leader OR type:base OR type:event OR type:upgrade';
+      
+      // Determine sort order
+      const sortOrder = filters.sortBy === 'name' ? 'name' : 
+                        filters.sortBy === 'cost' ? 'cost' :
+                        filters.sortBy === 'rarity' ? 'rarity' : 'setno';
+      const sortDir = filters.sortOrder || 'asc';
+      
+      const encodedQuery = encodeURIComponent(searchQuery);
+      const response = await apiClient.getRaw<SwudbSearchResponse>(
+        `/search/${encodedQuery}?grouping=cards&sortorder=${sortOrder}&sortdir=${sortDir}`
+      );
+      
+      if (response.validQuery && response.printings && response.printings.length > 0) {
+        // Deduplicate to show unique cards only
+        const uniqueCards = deduplicateCards(response.printings);
+        const allCards = uniqueCards.map(convertSwudbCard);
+        
+        // Apply pagination
+        const startIndex = (page - 1) * limit;
+        const paginatedCards = allCards.slice(startIndex, startIndex + limit);
+        
+        return {
+          data: paginatedCards,
+          page,
+          totalPages: Math.ceil(allCards.length / limit),
+          totalItems: allCards.length,
+        };
       }
-
-      if (filters.costMax !== undefined) {
-        filteredCards = filteredCards.filter((card) => card.cost <= filters.costMax!);
-      }
-
-      // Sort
-      if (filters.sortBy) {
-        filteredCards.sort((a, b) => {
-          let comparison = 0;
-          switch (filters.sortBy) {
-            case 'name':
-              comparison = a.name.localeCompare(b.name);
-              break;
-            case 'cost':
-              comparison = a.cost - b.cost;
-              break;
-            case 'rarity':
-              const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Legendary', 'Special'];
-              comparison = rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
-              break;
-            default:
-              comparison = 0;
-          }
-          return filters.sortOrder === 'desc' ? -comparison : comparison;
-        });
-      }
-
-      const startIndex = (page - 1) * limit;
-      const paginatedCards = filteredCards.slice(startIndex, startIndex + limit);
-
+      
       return {
-        data: paginatedCards,
+        data: [],
         page,
-        totalPages: Math.ceil(filteredCards.length / limit),
-        totalItems: filteredCards.length,
+        totalPages: 0,
+        totalItems: 0,
+      };
+    } catch (error) {
+      // Return empty results on error
+      return {
+        data: [],
+        page,
+        totalPages: 0,
+        totalItems: 0,
       };
     }
   },
 
-  // Get single card by ID
+  // Get single card by ID (format: SET_NUMBER, e.g., SOR_005)
   async getCard(cardId: string): Promise<Card | null> {
     try {
-      const response = await apiClient.get<Card>(`/cards/${cardId}`);
-      return response;
+      const [setCode, cardNumber] = cardId.split('_');
+      const response = await apiClient.getRaw<SwudbSearchResponse>(
+        `/search/set:${setCode} number:${cardNumber}?grouping=cards&sortorder=setno&sortdir=asc`
+      );
+      
+      if (response.validQuery && response.printings?.length > 0) {
+        return convertSwudbCard(response.printings[0]);
+      }
+      
+      return null;
     } catch (error) {
-      // Fallback to mock data
-      return MOCK_CARDS.find((card) => card.id === cardId) || null;
+      return null;
     }
   },
 
   // Get all sets
   async getSets(): Promise<CardSet[]> {
     try {
-      const response = await apiClient.get<CardSet[]>('/sets');
-      return response;
+      const response = await apiClient.getRaw<SwudbSetResponse[]>('/card/getAllSets');
+      
+      // Filter to main expansions (expansionType 1) and flatten children
+      const sets: CardSet[] = [];
+      
+      for (const set of response) {
+        // Add main set if it's a main expansion
+        if (set.expansionType === 1 && set.cardCount > 0) {
+          sets.push(convertSwudbSet(set));
+        }
+      }
+      
+      return sets;
     } catch (error) {
-      return MOCK_SETS;
+      return [];
     }
   },
 
@@ -350,14 +295,44 @@ export const cardsApi = {
     return this.searchCards({ sets: [setCode] }, page, limit);
   },
 
-  // Get random cards (for featured/hot)
+  // Get featured cards (leaders)
+  async getFeaturedCards(count = 6): Promise<Card[]> {
+    try {
+      const response = await apiClient.getRaw<SwudbSearchResponse>(
+        `/search/type:leader?grouping=cards&sortorder=name&sortdir=asc`
+      );
+      
+      if (response.validQuery && response.printings && response.printings.length > 0) {
+        const uniqueCards = deduplicateCards(response.printings);
+        const leaders = uniqueCards.map(convertSwudbCard);
+        // Pick random leaders
+        const shuffled = [...leaders].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, count);
+      }
+      
+      return [];
+    } catch (error) {
+      return [];
+    }
+  },
+
+  // Get random cards
   async getRandomCards(count = 10): Promise<Card[]> {
     try {
-      const response = await apiClient.get<Card[]>('/cards/random', { count });
-      return response;
+      const response = await apiClient.getRaw<SwudbSearchResponse>(
+        `/search/type:unit?grouping=cards&sortorder=name&sortdir=asc`
+      );
+      
+      if (response.validQuery && response.printings && response.printings.length > 0) {
+        const uniqueCards = deduplicateCards(response.printings);
+        const allCards = uniqueCards.map(convertSwudbCard);
+        const shuffled = [...allCards].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, count);
+      }
+      
+      return [];
     } catch (error) {
-      const shuffled = [...MOCK_CARDS].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, count);
+      return [];
     }
   },
 };

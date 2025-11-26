@@ -3,7 +3,7 @@ import { View, StyleSheet, Image, Pressable, Dimensions } from 'react-native';
 import { Text, Surface, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Card } from '../types';
-import { rarityColors, aspectColors } from '../utils/theme';
+import { rarityColors, rarityLetters, aspectColors } from '../utils/theme';
 
 interface CardTileProps {
   card: Card;
@@ -38,13 +38,17 @@ export function CardTile({ card, onPress, size = 'medium', showPrice = false, qu
             resizeMode="cover"
           />
           
-          {/* Rarity indicator */}
+          {/* Rarity badge with letter */}
           <View
             style={[
               styles.rarityBadge,
-              { backgroundColor: rarityColors[card.rarity] || theme.colors.outline },
+              { backgroundColor: rarityColors[card.rarity] || '#808080' },
             ]}
-          />
+          >
+            <Text style={styles.rarityText}>
+              {rarityLetters[card.rarity] || '?'}
+            </Text>
+          </View>
 
           {/* Cost badge */}
           {card.cost !== undefined && card.type !== 'Leader' && card.type !== 'Base' && (
@@ -76,11 +80,11 @@ export function CardTile({ card, onPress, size = 'medium', showPrice = false, qu
           </Text>
           
           <View style={styles.metaRow}>
-            {/* Aspects */}
+            {/* Aspects - using index as key to allow duplicate aspects */}
             <View style={styles.aspectsContainer}>
               {card.aspects.slice(0, 2).map((aspect, index) => (
                 <View
-                  key={aspect}
+                  key={index}
                   style={[
                     styles.aspectDot,
                     { backgroundColor: aspectColors[aspect] || theme.colors.outline },
@@ -138,11 +142,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rarityText: {
+    color: '#000',
+    fontSize: 11,
+    fontWeight: '700',
   },
   costBadge: {
     position: 'absolute',

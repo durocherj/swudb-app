@@ -168,8 +168,8 @@ export function CardDetailsScreen() {
             Aspects
           </Text>
           <View style={styles.aspectsRow}>
-            {card.aspects.map((aspect) => (
-              <View key={aspect} style={styles.aspectItem}>
+            {card.aspects.map((aspect, index) => (
+              <View key={index} style={styles.aspectItem}>
                 <View
                   style={[styles.aspectDot, { backgroundColor: aspectColors[aspect] }]}
                 />
