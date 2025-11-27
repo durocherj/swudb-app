@@ -8,5 +8,5 @@ export { MarketsScreen } from './MarketsScreen';
 export { SetsScreen } from './SetsScreen';
 export { SetDetailsScreen } from './SetDetailsScreen';
 export { RulesScreen } from './RulesScreen';
-
-
+export { LoginScreen } from './LoginScreen';
+export { AccountScreen } from './AccountScreen';

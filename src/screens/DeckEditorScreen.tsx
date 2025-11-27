@@ -6,6 +6,8 @@ import {
   FlatList,
   Share,
   Dimensions,
+  Image,
+  Pressable,
 } from 'react-native';
 import {
   Text,
@@ -121,7 +123,15 @@ export function DeckEditorScreen() {
   };
 
   const handleAddCards = () => {
-    navigation.navigate('Home' as never);
+    navigation.navigate('Home', { selectForDeck: deck.id } as never);
+  };
+
+  const handleAddLeader = () => {
+    navigation.navigate('Home', { filterType: 'Leader', selectForDeck: deck.id } as never);
+  };
+
+  const handleAddBase = () => {
+    navigation.navigate('Home', { filterType: 'Base', selectForDeck: deck.id } as never);
   };
 
   const renderDeckCard = ({ item }: { item: DeckCardType }) => (
@@ -260,23 +270,29 @@ export function DeckEditorScreen() {
             Leader
           </Text>
           {deck.leader ? (
-            <Surface style={[styles.leaderCard, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <View style={styles.leaderContent}>
-                <MaterialCommunityIcons name="account-star" size={32} color={theme.colors.primary} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Pressable onPress={handleAddLeader}>
+              <Surface style={styles.leaderCardWithImage} elevation={2}>
+                {/* Background Image */}
+                <Image
+                  source={{ uri: deck.leader.imageUrl }}
+                  style={styles.leaderBackgroundImage}
+                  resizeMode="cover"
+                />
+                {/* Text Overlay with semi-transparent background */}
+                <View style={styles.leaderTextOverlay}>
+                  <Text variant="titleMedium" style={styles.leaderNameText}>
                     {deck.leader.name}
                   </Text>
                   {deck.leader.subtitle && (
-                    <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                    <Text variant="bodySmall" style={styles.leaderSubtitleText}>
                       {deck.leader.subtitle}
                     </Text>
                   )}
                 </View>
-              </View>
-            </Surface>
+              </Surface>
+            </Pressable>
           ) : (
-            <Button mode="outlined" onPress={handleAddCards} icon="plus" style={styles.addButton}>
+            <Button mode="outlined" onPress={handleAddLeader} icon="plus" style={styles.addButton}>
               Add Leader
             </Button>
           )}
@@ -288,21 +304,27 @@ export function DeckEditorScreen() {
             Base
           </Text>
           {deck.base ? (
-            <Surface style={[styles.leaderCard, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <View style={styles.leaderContent}>
-                <MaterialCommunityIcons name="home-city" size={32} color={theme.colors.secondary} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Pressable onPress={handleAddBase}>
+              <Surface style={styles.leaderCardWithImage} elevation={2}>
+                {/* Background Image */}
+                <Image
+                  source={{ uri: deck.base.imageUrl }}
+                  style={styles.baseBackgroundImage}
+                  resizeMode="cover"
+                />
+                {/* Text Overlay with semi-transparent background */}
+                <View style={styles.leaderTextOverlay}>
+                  <Text variant="titleMedium" style={styles.leaderNameText}>
                     {deck.base.name}
                   </Text>
-                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                  <Text variant="bodySmall" style={styles.leaderSubtitleText}>
                     HP: {deck.base.hp}
                   </Text>
                 </View>
-              </View>
-            </Surface>
+              </Surface>
+            </Pressable>
           ) : (
-            <Button mode="outlined" onPress={handleAddCards} icon="plus" style={styles.addButton}>
+            <Button mode="outlined" onPress={handleAddBase} icon="plus" style={styles.addButton}>
               Add Base
             </Button>
           )}
@@ -442,6 +464,42 @@ const styles = StyleSheet.create({
   leaderContent: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  leaderCardWithImage: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    height: 80,
+    position: 'relative',
+  },
+  leaderBackgroundImage: {
+    position: 'absolute',
+    width: '200%',
+    height: '400%',
+    left: 0, // Keep left side visible where character art is
+    top: '-25%', // Start above container to show full image
+  },
+  baseBackgroundImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '300%',
+    left: 0,
+    top: '-25%', // Start above container to show full image
+  },
+  leaderTextOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(50, 50, 50, 0.75)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  leaderNameText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  leaderSubtitleText: {
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   addButton: {
     borderRadius: 12,

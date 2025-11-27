@@ -41,6 +41,7 @@ export type Aspect =
   | 'Heroism';
 
 export type Rarity = 
+  | 'Starter'
   | 'Common'
   | 'Uncommon'
   | 'Rare'
@@ -85,6 +86,11 @@ export interface Deck {
   author?: string;
   likes?: number;
   views?: number;
+  // SWUDB-specific properties
+  leaderImageUrl?: string;
+  baseImageUrl?: string;
+  isSwudbDeck?: boolean;
+  editable?: boolean;
 }
 
 export interface DeckCard {

@@ -7,17 +7,18 @@ import {
   Dimensions,
 } from 'react-native';
 import { Searchbar, Chip, useTheme, ActivityIndicator, Text } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Header, CardTile, EmptyState } from '../components';
 import { cardsApi } from '../api';
-import { Card, PaginatedResponse } from '../types';
+import { Card, PaginatedResponse, CardType } from '../types';
 import { MainStackParamList } from '../types/navigation';
-import { useFilters } from '../context';
+import { useFilters, useDecks } from '../context';
 import { aspectColors } from '../utils/theme';
 
 type HomeScreenNavProp = NativeStackNavigationProp<MainStackParamList, 'Home'>;
+type HomeScreenRouteProp = RouteProp<MainStackParamList, 'Home'>;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const NUM_COLUMNS = 2;
@@ -25,7 +26,13 @@ const NUM_COLUMNS = 2;
 export function HomeScreen() {
   const theme = useTheme();
   const navigation = useNavigation<HomeScreenNavProp>();
+  const route = useRoute<HomeScreenRouteProp>();
   const { filters, updateFilter, resetFilters, hasActiveFilters } = useFilters();
+  const { setLeader, setBase, addCardToDeck } = useDecks();
+
+  // Get navigation params for filtering
+  const filterType = route.params?.filterType;
+  const selectForDeck = route.params?.selectForDeck;
 
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +40,15 @@ export function HomeScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Build effective filters including navigation params
+  const effectiveFilters = useCallback(() => {
+    const baseFilters = { ...filters, search: searchQuery };
+    if (filterType) {
+      return { ...baseFilters, types: [filterType] };
+    }
+    return baseFilters;
+  }, [filters, searchQuery, filterType]);
 
   const loadCards = useCallback(async (pageNum: number, refresh = false) => {
     if (refresh) {
@@ -43,7 +59,7 @@ export function HomeScreen() {
 
     try {
       const response: PaginatedResponse<Card> = await cardsApi.searchCards(
-        { ...filters, search: searchQuery },
+        effectiveFilters(),
         pageNum,
         20
       );
@@ -62,11 +78,11 @@ export function HomeScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [filters, searchQuery]);
+  }, [effectiveFilters]);
 
   useEffect(() => {
     loadCards(1);
-  }, [filters]);
+  }, [filters, filterType]);
 
   const handleSearch = () => {
     updateFilter('search', searchQuery);
@@ -83,6 +99,26 @@ export function HomeScreen() {
   };
 
   const handleCardPress = (card: Card) => {
+    // If we're selecting for a deck, handle the selection
+    if (selectForDeck) {
+      if (filterType === 'Leader' && card.type === 'Leader') {
+        setLeader(selectForDeck, card);
+        navigation.goBack();
+        return;
+      }
+      if (filterType === 'Base' && card.type === 'Base') {
+        setBase(selectForDeck, card);
+        navigation.goBack();
+        return;
+      }
+      // For regular cards, add to deck
+      if (!filterType || (filterType !== 'Leader' && filterType !== 'Base')) {
+        addCardToDeck(selectForDeck, card);
+        // Don't navigate back, allow selecting more cards
+        return;
+      }
+    }
+    // Normal behavior - show card details
     navigation.navigate('CardDetails', { card });
   };
 
@@ -179,14 +215,35 @@ export function HomeScreen() {
     );
   };
 
+  // Determine header title based on selection mode
+  const getHeaderTitle = () => {
+    if (filterType === 'Leader') return 'Select Leader';
+    if (filterType === 'Base') return 'Select Base';
+    if (selectForDeck) return 'Add Cards';
+    return 'SWUDB';
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header title="SWUDB" />
+      <Header 
+        title={getHeaderTitle()} 
+        showBackButton={!!selectForDeck}
+        showFilterButton={!filterType} // Hide filter when already filtering by type
+      />
+
+      {/* Selection Mode Banner */}
+      {filterType && (
+        <View style={[styles.selectionBanner, { backgroundColor: theme.colors.primaryContainer }]}>
+          <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
+            Tap a {filterType.toLowerCase()} to select it
+          </Text>
+        </View>
+      )}
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <Searchbar
-          placeholder="Search cards..."
+          placeholder={filterType ? `Search ${filterType.toLowerCase()}s...` : "Search cards..."}
           onChangeText={setSearchQuery}
           value={searchQuery}
           onSubmitEditing={handleSearch}
@@ -244,6 +301,11 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  selectionBanner: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignItems: 'center',
   },
   searchContainer: {
     paddingHorizontal: 12,

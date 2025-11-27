@@ -12,6 +12,8 @@ import { MarketsScreen } from '../screens/MarketsScreen';
 import { SetsScreen } from '../screens/SetsScreen';
 import { SetDetailsScreen } from '../screens/SetDetailsScreen';
 import { RulesScreen } from '../screens/RulesScreen';
+import { LoginScreen } from '../screens/LoginScreen';
+import { AccountScreen } from '../screens/AccountScreen';
 import { MainStackParamList } from '../types/navigation';
 import { theme } from '../utils/theme';
 
@@ -80,6 +82,16 @@ export function AppNavigator() {
           <Stack.Screen name="Sets" component={SetsScreen} />
           <Stack.Screen name="SetDetails" component={SetDetailsScreen} />
           <Stack.Screen name="Rules" component={RulesScreen} />
+          <Stack.Screen 
+            name="Login" 
+            component={LoginScreen}
+            options={{ presentation: 'modal' }}
+          />
+          <Stack.Screen 
+            name="Account" 
+            component={AccountScreen}
+            options={{ presentation: 'modal' }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </MenuContext.Provider>

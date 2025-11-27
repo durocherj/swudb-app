@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Drawer, Text, useTheme } from 'react-native-paper';
+import { Drawer, Text, useTheme, Divider, Avatar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
@@ -30,11 +31,17 @@ interface LeftDrawerContentProps {
 export function LeftDrawerContent({ closeDrawer }: LeftDrawerContentProps) {
   const theme = useTheme();
   const navigation = useNavigation();
+  const { user, isLoggedIn } = useAuth();
   const [activeRoute, setActiveRoute] = React.useState('Home');
 
   const handleNavigation = (route: string) => {
     setActiveRoute(route);
     navigation.navigate(route as never);
+    closeDrawer();
+  };
+
+  const handleAccountPress = () => {
+    navigation.navigate('Account' as never);
     closeDrawer();
   };
 
@@ -59,6 +66,36 @@ export function LeftDrawerContent({ closeDrawer }: LeftDrawerContentProps) {
           Star Wars: Unlimited Database
         </Text>
       </View>
+
+      {/* User Account Section */}
+      <View style={styles.accountSection}>
+        {isLoggedIn && user ? (
+          <Drawer.Item
+            label={user.userName}
+            icon={({ size }) => (
+              <Avatar.Text
+                size={size + 8}
+                label={user.userName?.substring(0, 2).toUpperCase() || '??'}
+                style={{ backgroundColor: theme.colors.primary }}
+                labelStyle={{ fontSize: size * 0.5 }}
+              />
+            )}
+            onPress={handleAccountPress}
+            style={styles.accountItem}
+          />
+        ) : (
+          <Drawer.Item
+            label="Sign In"
+            icon={({ size, color }) => (
+              <MaterialCommunityIcons name="login" size={size} color={color} />
+            )}
+            onPress={handleAccountPress}
+            style={styles.accountItem}
+          />
+        )}
+      </View>
+
+      <Divider style={{ marginHorizontal: 16 }} />
 
       {/* Navigation Items */}
       <Drawer.Section style={styles.section}>
@@ -112,6 +149,14 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: 4,
     marginLeft: 48,
+  },
+  accountSection: {
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+  accountItem: {
+    marginHorizontal: 8,
+    borderRadius: 8,
   },
   section: {
     marginTop: 8,

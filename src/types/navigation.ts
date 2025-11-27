@@ -5,7 +5,10 @@ export type RootDrawerParamList = {
 };
 
 export type MainStackParamList = {
-  Home: undefined;
+  Home: { 
+    filterType?: 'Leader' | 'Base' | 'Unit' | 'Event' | 'Upgrade';
+    selectForDeck?: string; // deck ID when selecting cards for a deck
+  } | undefined;
   CardDetails: { card: Card };
   MyDecks: undefined;
   DeckEditor: { deck?: Deck };
@@ -15,6 +18,8 @@ export type MainStackParamList = {
   Sets: undefined;
   SetDetails: { setCode: string; setName: string };
   Rules: undefined;
+  Login: undefined;
+  Account: undefined;
 };
 
 declare global {

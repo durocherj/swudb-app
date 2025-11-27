@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Modal, Pressable, Dimensions, ScrollView } from 'react-native';
-import { Appbar, useTheme, Badge, Text, Drawer } from 'react-native-paper';
+import { Appbar, useTheme, Badge, Text, Drawer, Avatar, Divider } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFilters } from '../context';
+import { useFilters, useAuth } from '../context';
 import { RightDrawerContent } from './RightDrawerContent';
 
 interface HeaderProps {
@@ -49,6 +49,7 @@ export function Header({
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { hasActiveFilters } = useFilters();
+  const { user, isLoggedIn } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
 
@@ -59,6 +60,11 @@ export function Header({
   const handleNavigation = (route: string) => {
     setMenuVisible(false);
     navigation.navigate(route as never);
+  };
+
+  const handleAccountPress = () => {
+    setMenuVisible(false);
+    navigation.navigate('Account' as never);
   };
 
   return (
@@ -132,6 +138,36 @@ export function Header({
                   Star Wars: Unlimited Database
                 </Text>
               </View>
+
+              {/* Account / Sign In */}
+              <View style={styles.accountSection}>
+                {isLoggedIn && user ? (
+                  <Drawer.Item
+                    label={user.userName}
+                    icon={({ size }) => (
+                      <Avatar.Text
+                        size={size + 8}
+                        label={user.userName?.substring(0, 2).toUpperCase() || '??'}
+                        style={{ backgroundColor: theme.colors.primary }}
+                        labelStyle={{ fontSize: size * 0.5 }}
+                      />
+                    )}
+                    onPress={handleAccountPress}
+                    style={styles.menuItem}
+                  />
+                ) : (
+                  <Drawer.Item
+                    label="Sign In"
+                    icon={({ size, color }) => (
+                      <MaterialCommunityIcons name="login" size={size} color={color} />
+                    )}
+                    onPress={handleAccountPress}
+                    style={styles.menuItem}
+                  />
+                )}
+              </View>
+              
+              <Divider style={{ marginHorizontal: 16 }} />
 
               {/* Navigation Items */}
               <Drawer.Section style={styles.menuSection}>
@@ -227,6 +263,10 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontWeight: '700',
     letterSpacing: 2,
+  },
+  accountSection: {
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   menuSection: {
     marginTop: 8,

@@ -1,54 +1,93 @@
 import { apiClient } from './client';
 import { Deck, PaginatedResponse } from '../types';
+import { IMAGE_BASE_URL } from '../utils/constants';
 
-// Mock hot decks for development
-const MOCK_HOT_DECKS: Deck[] = [
-  {
-    id: 'deck_001',
-    name: 'Luke Aggro',
-    description: 'Fast aggro deck featuring Luke Skywalker as leader',
-    leader: null,
+// SWUDB deck summary from user endpoint
+export interface SwudbDeckSummary {
+  deckId: string;
+  deckDisplayStatus: number;
+  deckName: string;
+  authorName: string;
+  leaderImagePath: string;
+  secondLeaderImagePath: string | null;
+  baseImagePath: string;
+  deckFormat: number;
+  editable: boolean;
+  hidden: boolean;
+  heartFill: boolean;
+  deckLikeCount: number;
+  commentCount: number;
+}
+
+// User profile response from SWUDB
+interface SwudbUserProfile {
+  found: boolean;
+  userName: string;
+  memberSince: string;
+  newestDecks: SwudbDeckSummary[];
+  topDecks: SwudbDeckSummary[];
+}
+
+// Helper to fix image paths from API (removes ~ prefix)
+const fixImagePath = (path: string | null | undefined): string | undefined => {
+  if (!path) return undefined;
+  // Remove leading ~ if present and ensure proper URL format
+  // Paths come as ~/cards/SET/NUMBER.png, need to become https://swudb.com/images/cards/SET/NUMBER.png
+  const cleanPath = path.startsWith('~') ? path.substring(1) : path;
+  return `${IMAGE_BASE_URL}/images${cleanPath}`;
+};
+
+// Transform SWUDB deck summary to app's Deck interface
+const transformDeckSummary = (summary: SwudbDeckSummary): Deck => {
+  // Construct image URLs (fix paths that start with ~)
+  const leaderImageUrl = fixImagePath(summary.leaderImagePath);
+  const baseImageUrl = fixImagePath(summary.baseImagePath);
+
+  return {
+    id: summary.deckId,
+    name: summary.deckName,
+    description: undefined,
+    leader: null, // We don't have full card data, just the image
     base: null,
     cards: [],
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-20T15:30:00Z',
-    isPublic: true,
-    author: 'JediMaster42',
-    likes: 156,
-    views: 2340,
-  },
-  {
-    id: 'deck_002',
-    name: 'Vader Control',
-    description: 'Control deck with Darth Vader leading the Empire',
-    leader: null,
-    base: null,
-    cards: [],
-    createdAt: '2024-01-18T14:00:00Z',
-    updatedAt: '2024-01-22T09:15:00Z',
-    isPublic: true,
-    author: 'SithLord99',
-    likes: 203,
-    views: 3100,
-  },
-  {
-    id: 'deck_003',
-    name: 'Boba Bounty Hunters',
-    description: 'Bounty Hunter tribal deck with Boba Fett',
-    leader: null,
-    base: null,
-    cards: [],
-    createdAt: '2024-01-20T08:00:00Z',
-    updatedAt: '2024-01-25T12:45:00Z',
-    isPublic: true,
-    author: 'Mandalorian',
-    likes: 178,
-    views: 2890,
-  },
-];
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isPublic: summary.deckDisplayStatus > 0,
+    author: summary.authorName,
+    likes: summary.deckLikeCount,
+    views: undefined,
+    // Store image URLs for display
+    leaderImageUrl,
+    baseImageUrl,
+    isSwudbDeck: true, // Flag to indicate this is from SWUDB
+    editable: summary.editable,
+  };
+};
 
 export const decksApi = {
-  // Get hot/trending decks
+  // Get user's decks from SWUDB
+  async getUserDecks(username: string): Promise<Deck[]> {
+    try {
+      const response = await apiClient.get<SwudbUserProfile>(`/user/${username}`);
+      
+      if (!response.found) {
+        return [];
+      }
+
+      // Combine newest and top decks, removing duplicates
+      const allDecks = [...response.newestDecks, ...response.topDecks];
+      const uniqueDecks = allDecks.filter(
+        (deck, index, self) => index === self.findIndex(d => d.deckId === deck.deckId)
+      );
+
+      return uniqueDecks.map(transformDeckSummary);
+    } catch (error) {
+      console.error('Failed to fetch user decks:', error);
+      return [];
+    }
+  },
+
+  // Get hot/trending decks (currently not working on SWUDB)
   async getHotDecks(page = 1, limit = 20): Promise<PaginatedResponse<Deck>> {
     try {
       const response = await apiClient.get<PaginatedResponse<Deck>>('/decks/hot', {
@@ -57,29 +96,27 @@ export const decksApi = {
       });
       return response;
     } catch (error) {
-      // Return mock data
-      const startIndex = (page - 1) * limit;
-      const paginatedDecks = MOCK_HOT_DECKS.slice(startIndex, startIndex + limit);
+      // API not available
       return {
-        data: paginatedDecks,
+        data: [],
         page,
-        totalPages: Math.ceil(MOCK_HOT_DECKS.length / limit),
-        totalItems: MOCK_HOT_DECKS.length,
+        totalPages: 0,
+        totalItems: 0,
       };
     }
   },
 
-  // Get deck by ID
+  // Get deck by ID (currently not working on SWUDB)
   async getDeck(deckId: string): Promise<Deck | null> {
     try {
-      const response = await apiClient.get<Deck>(`/decks/${deckId}`);
+      const response = await apiClient.get<Deck>(`/deck/${deckId}`);
       return response;
     } catch (error) {
-      return MOCK_HOT_DECKS.find((deck) => deck.id === deckId) || null;
+      return null;
     }
   },
 
-  // Search community decks
+  // Search community decks (currently not working on SWUDB)
   async searchDecks(query: string, page = 1, limit = 20): Promise<PaginatedResponse<Deck>> {
     try {
       const response = await apiClient.get<PaginatedResponse<Deck>>('/decks/search', {
@@ -89,16 +126,11 @@ export const decksApi = {
       });
       return response;
     } catch (error) {
-      const filtered = MOCK_HOT_DECKS.filter(
-        (deck) =>
-          deck.name.toLowerCase().includes(query.toLowerCase()) ||
-          deck.description?.toLowerCase().includes(query.toLowerCase())
-      );
       return {
-        data: filtered,
+        data: [],
         page: 1,
-        totalPages: 1,
-        totalItems: filtered.length,
+        totalPages: 0,
+        totalItems: 0,
       };
     }
   },
@@ -113,5 +145,3 @@ export const decksApi = {
     }
   },
 };
-
-

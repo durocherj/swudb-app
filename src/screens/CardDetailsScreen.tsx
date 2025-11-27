@@ -163,23 +163,25 @@ export function CardDetailsScreen() {
         </View>
 
         {/* Aspects */}
-        <Surface style={[styles.section, { backgroundColor: theme.colors.surfaceVariant }]} elevation={1}>
-          <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 8 }}>
-            Aspects
-          </Text>
-          <View style={styles.aspectsRow}>
-            {card.aspects.map((aspect, index) => (
-              <View key={index} style={styles.aspectItem}>
-                <View
-                  style={[styles.aspectDot, { backgroundColor: aspectColors[aspect] }]}
-                />
-                <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-                  {aspect}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </Surface>
+        {card.aspects && card.aspects.length > 0 && (
+          <Surface style={[styles.section, { backgroundColor: theme.colors.surfaceVariant }]} elevation={1}>
+            <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 8 }}>
+              Aspects
+            </Text>
+            <View style={styles.aspectsRow}>
+              {card.aspects.map((aspect, index) => (
+                <View key={index} style={styles.aspectItem}>
+                  <View
+                    style={[styles.aspectDot, { backgroundColor: aspectColors[aspect] || theme.colors.outline }]}
+                  />
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+                    {aspect}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </Surface>
+        )}
 
         {/* Stats (for Units) */}
         {card.power !== undefined && card.hp !== undefined && (
@@ -242,31 +244,31 @@ export function CardDetailsScreen() {
         )}
 
         {/* Traits & Keywords */}
-        {(card.traits.length > 0 || card.keywords.length > 0) && (
+        {((card.traits && card.traits.length > 0) || (card.keywords && card.keywords.length > 0)) && (
           <Surface style={[styles.section, { backgroundColor: theme.colors.surfaceVariant }]} elevation={1}>
-            {card.traits.length > 0 && (
-              <View style={{ marginBottom: card.keywords.length > 0 ? 12 : 0 }}>
+            {card.traits && card.traits.length > 0 && (
+              <View style={{ marginBottom: card.keywords && card.keywords.length > 0 ? 12 : 0 }}>
                 <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 8 }}>
                   Traits
                 </Text>
                 <View style={styles.traitsRow}>
-                  {card.traits.map((trait) => (
-                    <Chip key={trait} mode="outlined" style={styles.traitChip}>
+                  {card.traits.map((trait, index) => (
+                    <Chip key={`${trait}-${index}`} mode="outlined" style={styles.traitChip}>
                       {trait}
                     </Chip>
                   ))}
                 </View>
               </View>
             )}
-            {card.keywords.length > 0 && (
+            {card.keywords && card.keywords.length > 0 && (
               <View>
                 <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 8 }}>
                   Keywords
                 </Text>
                 <View style={styles.traitsRow}>
-                  {card.keywords.map((keyword) => (
+                  {card.keywords.map((keyword, index) => (
                     <Chip
-                      key={keyword}
+                      key={`${keyword}-${index}`}
                       mode="flat"
                       style={[styles.keywordChip, { backgroundColor: theme.colors.tertiaryContainer }]}
                       textStyle={{ color: theme.colors.tertiary }}
@@ -281,7 +283,7 @@ export function CardDetailsScreen() {
         )}
 
         {/* Price */}
-        {price && (
+        {price && price.market !== undefined && (
           <Surface style={[styles.section, { backgroundColor: theme.colors.surfaceVariant }]} elevation={1}>
             <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 8 }}>
               Market Price
@@ -289,7 +291,7 @@ export function CardDetailsScreen() {
             <View style={styles.priceRow}>
               <View style={styles.priceItem}>
                 <Text variant="headlineSmall" style={{ color: theme.colors.primary, fontWeight: '700' }}>
-                  ${price.market.toFixed(2)}
+                  ${(price.market || 0).toFixed(2)}
                 </Text>
                 <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
                   Market
@@ -297,7 +299,7 @@ export function CardDetailsScreen() {
               </View>
               <View style={styles.priceItem}>
                 <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
-                  ${price.low.toFixed(2)}
+                  ${(price.low || 0).toFixed(2)}
                 </Text>
                 <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
                   Low
@@ -305,7 +307,7 @@ export function CardDetailsScreen() {
               </View>
               <View style={styles.priceItem}>
                 <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
-                  ${price.high.toFixed(2)}
+                  ${(price.high || 0).toFixed(2)}
                 </Text>
                 <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
                   High
