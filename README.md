@@ -2,7 +2,7 @@
 
 A React Native mobile application for the Star Wars: Unlimited card game database (swudb.com).
 
-## Features
+## Planned Features
 
 - **Card Browser**: Search and filter cards by type, aspect, rarity, cost, and more
 - **Dual Drawer Navigation**: Swipe left for main menu, swipe right for filters
