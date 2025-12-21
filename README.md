@@ -22,33 +22,6 @@ A React Native mobile application for the Star Wars: Unlimited card game databas
 - **AsyncStorage** for local data persistence
 - **Axios** for API calls
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- npm or yarn
-- Expo CLI (`npm install -g expo-cli`)
-- Expo Go app on your mobile device (for testing)
-
-### Installation
-
-1. Navigate to the project directory:
-   ```bash
-   cd swudb-app
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm start
-   ```
-
-4. Scan the QR code with Expo Go (Android) or Camera app (iOS)
 
 ## Project Structure
 
@@ -90,7 +63,7 @@ swudb-app/
 
 ## Navigation
 
-The app uses a dual-drawer navigation pattern:
+The app is planned to use a dual-drawer navigation pattern:
 
 - **Left Drawer** (swipe from left): Main navigation menu
   - SWUDB (Home)
