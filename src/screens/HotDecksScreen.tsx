@@ -44,7 +44,7 @@ export function HotDecksScreen() {
       } else {
         response = await decksApi.getHotDecks();
       }
-      setDecks(response.data);
+      setDecks(response?.data || []);
     } catch (error) {
       console.error('Failed to load hot decks:', error);
     } finally {
@@ -76,14 +76,17 @@ export function HotDecksScreen() {
     setSnackbarVisible(true);
   };
 
-  const renderDeck = ({ item }: { item: Deck }) => (
-    <DeckCard
-      deck={item}
-      onPress={handleDeckPress}
-      cardCount={item.cards.reduce((sum, dc) => sum + dc.quantity, 0)}
-      showActions={false}
-    />
-  );
+  const renderDeck = ({ item }: { item: Deck }) => {
+    const cardCount = item.cards?.reduce((sum, dc) => sum + dc.quantity, 0) || 0;
+    return (
+      <DeckCard
+        deck={item}
+        onPress={handleDeckPress}
+        cardCount={cardCount}
+        showActions={false}
+      />
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -115,8 +118,8 @@ export function HotDecksScreen() {
       ) : decks.length === 0 ? (
         <EmptyState
           icon="fire"
-          title="No Decks Found"
-          description={searchQuery ? 'Try a different search term' : 'Check back later for popular decks'}
+          title="Hot Decks Unavailable"
+          description={searchQuery ? 'Search is not available at this time' : 'The Hot Decks feature is not currently available through the SWUDB API. Check back later for popular community decks.'}
         />
       ) : (
         <FlatList

@@ -49,10 +49,10 @@ export function MyDecksScreen() {
     }
 
     try {
-      const decks = await decksApi.getUserDecks(user.userName);
+      // Fetch user's published decks from SWUDB
+      // Note: Private/unlisted decks are not available through the SWUDB API
+      const decks = await decksApi.getMyDecks(user.userName);
       setSwudbDecks(decks);
-    } catch (error) {
-      console.error('Failed to fetch SWUDB decks:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -217,8 +217,8 @@ export function MyDecksScreen() {
     );
   }
 
-  // Combine local and SWUDB decks
-  const allDecks = [...swudbDecks, ...localDecks];
+  // Combine local and SWUDB decks (ensure both are arrays)
+  const allDecks = [...(swudbDecks || []), ...(localDecks || [])];
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>

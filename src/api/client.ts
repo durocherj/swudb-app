@@ -40,6 +40,23 @@ class ApiClient {
     return response.data;
   }
 
+  // Get HTML content as text (for scraping)
+  // Note: This uses a full URL (not relative to API_BASE_URL) to access the website
+  async getHtml(fullUrl: string): Promise<string> {
+    // Use axios directly with the full URL (not the client instance which uses API_BASE_URL)
+    // This ensures cookies are sent for authenticated requests
+    const response = await axios.get(fullUrl, {
+      responseType: 'text',
+      timeout: 10000,
+      headers: {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      // Include credentials/cookies for authenticated requests
+      withCredentials: true,
+    });
+    return response.data;
+  }
+
   async post<T>(endpoint: string, data?: Record<string, any>): Promise<T> {
     const response = await this.client.post<T>(endpoint, data);
     return response.data;

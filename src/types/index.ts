@@ -91,6 +91,7 @@ export interface Deck {
   baseImageUrl?: string;
   isSwudbDeck?: boolean;
   editable?: boolean;
+  deckUrl?: string; // URL to view/edit deck on SWUDB website
 }
 
 export interface DeckCard {

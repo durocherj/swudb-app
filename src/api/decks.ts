@@ -65,21 +65,45 @@ const transformDeckSummary = (summary: SwudbDeckSummary): Deck => {
 };
 
 export const decksApi = {
-  // Get user's decks from SWUDB
+  // Get current logged-in user's decks
+  // Note: The SWUDB API only returns published decks
+  // Unlisted/private decks are not available through the API
+  async getMyDecks(username?: string): Promise<Deck[]> {
+    if (!username) {
+      return [];
+    }
+
+    // Use the API endpoint - it only returns published decks
+    // HTML scraping doesn't work because the site is client-side rendered (React)
+    return await this.getUserDecks(username);
+  },
+
+  // Get user's decks from SWUDB (public profile - only published decks)
+  // Note: When authenticated and viewing your own profile, this may return all decks
   async getUserDecks(username: string): Promise<Deck[]> {
     try {
-      const response = await apiClient.get<SwudbUserProfile>(`/user/${username}`);
+      const response = await apiClient.get<any>(`/user/${username}`);
       
       if (!response.found) {
         return [];
       }
 
-      // Combine newest and top decks, removing duplicates
-      const allDecks = [...response.newestDecks, ...response.topDecks];
+      // Get decks from newestDecks and topDecks arrays
+      // Note: This endpoint only returns published decks (displayStatus > 0)
+      // Private/unlisted decks are not available through the SWUDB API
+      let allDecks: SwudbDeckSummary[] = [];
+      
+      if (response.newestDecks && Array.isArray(response.newestDecks)) {
+        allDecks.push(...response.newestDecks);
+      }
+      if (response.topDecks && Array.isArray(response.topDecks)) {
+        allDecks.push(...response.topDecks);
+      }
+      
+      // Remove duplicates by deckId
       const uniqueDecks = allDecks.filter(
         (deck, index, self) => index === self.findIndex(d => d.deckId === deck.deckId)
       );
-
       return uniqueDecks.map(transformDeckSummary);
     } catch (error) {
       console.error('Failed to fetch user decks:', error);

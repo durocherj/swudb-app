@@ -12,12 +12,8 @@ export type MainStackParamList = {
   CardDetails: { card: Card };
   MyDecks: undefined;
   DeckEditor: { deck?: Deck };
-  HotDecks: undefined;
   Collection: undefined;
   Markets: undefined;
-  Sets: undefined;
-  SetDetails: { setCode: string; setName: string };
-  Rules: undefined;
   Login: undefined;
   Account: undefined;
 };

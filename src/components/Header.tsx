@@ -31,11 +31,8 @@ type NavItem = {
 const navItems: NavItem[] = [
   { key: 'home', label: 'SWUDB', icon: 'cards', route: 'Home' },
   { key: 'mydecks', label: 'My Decks', icon: 'card-multiple', route: 'MyDecks' },
-  { key: 'hotdecks', label: 'Hot Decks', icon: 'fire', route: 'HotDecks' },
   { key: 'collection', label: 'Collection', icon: 'folder-star', route: 'Collection' },
   { key: 'markets', label: 'Markets', icon: 'chart-line', route: 'Markets' },
-  { key: 'sets', label: 'Sets', icon: 'package-variant-closed', route: 'Sets' },
-  { key: 'rules', label: 'Rules', icon: 'book-open-variant', route: 'Rules' },
 ];
 
 export function Header({

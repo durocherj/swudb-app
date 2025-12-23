@@ -6,12 +6,8 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { CardDetailsScreen } from '../screens/CardDetailsScreen';
 import { MyDecksScreen } from '../screens/MyDecksScreen';
 import { DeckEditorScreen } from '../screens/DeckEditorScreen';
-import { HotDecksScreen } from '../screens/HotDecksScreen';
 import { CollectionScreen } from '../screens/CollectionScreen';
 import { MarketsScreen } from '../screens/MarketsScreen';
-import { SetsScreen } from '../screens/SetsScreen';
-import { SetDetailsScreen } from '../screens/SetDetailsScreen';
-import { RulesScreen } from '../screens/RulesScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { AccountScreen } from '../screens/AccountScreen';
 import { MainStackParamList } from '../types/navigation';
@@ -76,12 +72,8 @@ export function AppNavigator() {
           />
           <Stack.Screen name="MyDecks" component={MyDecksScreen} />
           <Stack.Screen name="DeckEditor" component={DeckEditorScreen} />
-          <Stack.Screen name="HotDecks" component={HotDecksScreen} />
           <Stack.Screen name="Collection" component={CollectionScreen} />
           <Stack.Screen name="Markets" component={MarketsScreen} />
-          <Stack.Screen name="Sets" component={SetsScreen} />
-          <Stack.Screen name="SetDetails" component={SetDetailsScreen} />
-          <Stack.Screen name="Rules" component={RulesScreen} />
           <Stack.Screen 
             name="Login" 
             component={LoginScreen}
