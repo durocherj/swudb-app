@@ -69,7 +69,6 @@ export function CollectionScreen() {
   const renderCard = ({ item }: { item: CollectionCard }) => (
     <CardTile
       card={item.card}
-      onPress={() => handleCardPress(item.card)}
       size="medium"
       showPrice
       quantity={item.quantity}

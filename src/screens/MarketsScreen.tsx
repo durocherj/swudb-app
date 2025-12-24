@@ -134,7 +134,7 @@ export function MarketsScreen() {
   );
 
   const renderSearchResult = ({ item }: { item: Card }) => (
-    <CardTile card={item} onPress={handleCardPress} size="small" showPrice />
+    <CardTile card={item} size="small" showPrice />
   );
 
   return (

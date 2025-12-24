@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, Image } from 'react-native';
 import {
-  FAB,
   useTheme,
   Portal,
   Dialog,
@@ -10,6 +9,7 @@ import {
   Text,
   Surface,
   ActivityIndicator,
+  Appbar,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -222,7 +222,17 @@ export function MyDecksScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Header title="My Decks" showFilterButton={false} />
+      <Header 
+        title="My Decks" 
+        showFilterButton={false}
+        rightActions={
+          <Appbar.Action
+            icon="plus"
+            iconColor={theme.colors.primary}
+            onPress={() => setCreateDialogVisible(true)}
+          />
+        }
+      />
 
       {loading && swudbDecks.length === 0 ? (
         <View style={styles.centerContainer}>
@@ -267,13 +277,6 @@ export function MyDecksScreen() {
           }
         />
       )}
-
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        color={theme.colors.onPrimary}
-        onPress={() => setCreateDialogVisible(true)}
-      />
 
       {/* Create Deck Dialog */}
       <Portal>
@@ -423,12 +426,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
   },
   input: {
     marginBottom: 12,

@@ -57,6 +57,20 @@ export const DECK_LIMITS = {
   requiresBase: true,
 };
 
+// Special cards with different copy limits
+const SPECIAL_CARD_LIMITS: Record<string, number> = {
+  'Swarming Vulture Droid': 15,
+};
+
+/**
+ * Get the maximum number of copies allowed for a card in a deck
+ * @param cardName The name of the card
+ * @returns The maximum number of copies allowed (default: 3)
+ */
+export const getMaxCopiesForCard = (cardName: string): number => {
+  return SPECIAL_CARD_LIMITS[cardName] || DECK_LIMITS.maxCopiesPerCard;
+};
+
 export const STORAGE_KEYS = {
   COLLECTION: '@swudb/collection',
   DECKS: '@swudb/decks',

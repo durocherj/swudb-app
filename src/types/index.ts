@@ -23,6 +23,7 @@ export interface Card {
   backImageUrl?: string;
   price?: PriceInfo;
   variants?: CardVariant[];
+  isUnique?: boolean;
 }
 
 export type CardType = 

@@ -42,7 +42,7 @@ export function DeckEditorScreen() {
   const navigation = useNavigation();
   const route = useRoute<DeckEditorRouteProp>();
   const insets = useSafeAreaInsets();
-  const { decks, updateDeck, removeCardFromDeck, getDeckCardCount, isDeckValid, exportDeck } = useDecks();
+  const { decks, updateDeck, addCardToDeck, removeCardFromDeck, getDeckCardCount, isDeckValid, exportDeck } = useDecks();
 
   const [deck, setDeck] = useState<Deck | null>(route.params?.deck || null);
   const [editing, setEditing] = useState(false);
@@ -122,6 +122,11 @@ export function DeckEditorScreen() {
     removeCardFromDeck(deck.id, cardId);
   };
 
+  const handleAddCard = (card: Card) => {
+    addCardToDeck(deck.id, card);
+  };
+
+
   const handleAddCards = () => {
     navigation.navigate('Home', { selectForDeck: deck.id } as never);
   };
@@ -135,37 +140,16 @@ export function DeckEditorScreen() {
   };
 
   const renderDeckCard = ({ item }: { item: DeckCardType }) => (
-    <Surface style={[styles.deckCardItem, { backgroundColor: theme.colors.surfaceVariant }]}>
-      <View style={styles.deckCardContent}>
-        <View style={[styles.costBadge, { backgroundColor: theme.colors.primary }]}>
-          <Text variant="labelMedium" style={{ color: theme.colors.onPrimary, fontWeight: '700' }}>
-            {item.card.cost}
-          </Text>
-        </View>
-        <View style={styles.deckCardInfo}>
-          <Text variant="bodyMedium" numberOfLines={1} style={{ color: theme.colors.onSurface }}>
-            {item.card.name}
-          </Text>
-          <View style={styles.aspectDots}>
-            {item.card.aspects.map((aspect, index) => (
-              <View
-                key={index}
-                style={[styles.aspectDot, { backgroundColor: aspectColors[aspect] }]}
-              />
-            ))}
-          </View>
-        </View>
-        <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
-          ×{item.quantity}
-        </Text>
-        <IconButton
-          icon="minus-circle"
-          size={20}
-          onPress={() => handleRemoveCard(item.card.id)}
-          iconColor={theme.colors.error}
-        />
-      </View>
-    </Surface>
+    <CardTile
+      card={item.card}
+      size="medium"
+      showPrice={false}
+      quantity={item.quantity}
+      showDeckControls={true}
+      onAddCard={handleAddCard}
+      onRemoveCard={(card) => handleRemoveCard(card.id)}
+      currentQuantity={item.quantity}
+    />
   );
 
   return (
@@ -337,11 +321,13 @@ export function DeckEditorScreen() {
               <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
                 {type}s ({cardsByType[type].reduce((sum, dc) => sum + dc.quantity, 0)})
               </Text>
-              {cardsByType[type]
-                .sort((a, b) => (a.card.cost || 0) - (b.card.cost || 0))
-                .map((dc) => (
-                  <View key={dc.card.id}>{renderDeckCard({ item: dc })}</View>
-                ))}
+              <View style={styles.cardsGrid}>
+                {cardsByType[type]
+                  .sort((a, b) => (a.card.cost || 0) - (b.card.cost || 0))
+                  .map((dc) => (
+                    <View key={dc.card.id}>{renderDeckCard({ item: dc })}</View>
+                  ))}
+              </View>
             </View>
           ) : null
         )}
@@ -457,6 +443,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: '600',
   },
+  cardsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
   leaderCard: {
     borderRadius: 12,
     padding: 16,
@@ -537,7 +528,7 @@ const styles = StyleSheet.create({
   },
   addCardsSection: {
     padding: 12,
-    paddingBottom: 32,
+    paddingBottom: 80, // Increased to prevent button from being hidden behind phone menu
   },
   addCardsButton: {
     borderRadius: 12,

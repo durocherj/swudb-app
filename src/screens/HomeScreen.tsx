@@ -5,8 +5,9 @@ import {
   FlatList,
   RefreshControl,
   Dimensions,
+  ScrollView,
 } from 'react-native';
-import { Searchbar, Chip, useTheme, ActivityIndicator, Text } from 'react-native-paper';
+import { Searchbar, Chip, useTheme, ActivityIndicator, Text, List } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -28,18 +29,28 @@ export function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavProp>();
   const route = useRoute<HomeScreenRouteProp>();
   const { filters, updateFilter, resetFilters, hasActiveFilters } = useFilters();
-  const { setLeader, setBase, addCardToDeck } = useDecks();
+  const { decks, setLeader, setBase, addCardToDeck, removeCardFromDeck } = useDecks();
 
   // Get navigation params for filtering
   const filterType = route.params?.filterType;
   const selectForDeck = route.params?.selectForDeck;
+  const initialSearchQuery = route.params?.searchQuery || '';
 
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const [standardBasesExpanded, setStandardBasesExpanded] = useState(true);
+  const [uniqueBasesExpanded, setUniqueBasesExpanded] = useState(true);
+
+  // Update search query when route params change
+  useEffect(() => {
+    if (route.params?.searchQuery && route.params.searchQuery !== searchQuery) {
+      setSearchQuery(route.params.searchQuery);
+    }
+  }, [route.params?.searchQuery, searchQuery]);
 
   // Build effective filters including navigation params
   const effectiveFilters = useCallback(() => {
@@ -58,31 +69,55 @@ export function HomeScreen() {
     }
 
     try {
-      const response: PaginatedResponse<Card> = await cardsApi.searchCards(
-        effectiveFilters(),
-        pageNum,
-        20
-      );
+      // For Base selection, load all pages at once
+      if (filterType === 'Base') {
+        let allBases: Card[] = [];
+        let currentPage = 1;
+        let totalPages = 1;
 
-      if (refresh || pageNum === 1) {
-        setCards(response.data);
+        do {
+          const response: PaginatedResponse<Card> = await cardsApi.searchCards(
+            effectiveFilters(),
+            currentPage,
+            20
+          );
+          
+          allBases = [...allBases, ...response.data];
+          totalPages = response.totalPages;
+          currentPage++;
+        } while (currentPage <= totalPages);
+
+        setCards(allBases);
+        setHasMore(false);
+        setPage(1);
       } else {
-        setCards((prev) => [...prev, ...response.data]);
-      }
+        // Normal pagination for other card types
+        const response: PaginatedResponse<Card> = await cardsApi.searchCards(
+          effectiveFilters(),
+          pageNum,
+          20
+        );
 
-      setHasMore(pageNum < response.totalPages);
-      setPage(pageNum);
+        if (refresh || pageNum === 1) {
+          setCards(response.data);
+        } else {
+          setCards((prev) => [...prev, ...response.data]);
+        }
+
+        setHasMore(pageNum < response.totalPages);
+        setPage(pageNum);
+      }
     } catch (error) {
       console.error('Failed to load cards:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [effectiveFilters]);
+  }, [effectiveFilters, filterType]);
 
   useEffect(() => {
     loadCards(1);
-  }, [filters, filterType]);
+  }, [filters, filterType, searchQuery, loadCards]);
 
   const handleSearch = () => {
     updateFilter('search', searchQuery);
@@ -144,9 +179,112 @@ export function HomeScreen() {
     }
   };
 
-  const renderCard = ({ item }: { item: Card }) => (
-    <CardTile card={item} onPress={handleCardPress} size="medium" showPrice />
-  );
+  // Get current deck if selecting for deck
+  const currentDeck = selectForDeck ? decks.find(d => d.id === selectForDeck) : null;
+
+  // Get quantity of a card in the current deck
+  const getCardQuantity = (cardId: string): number => {
+    if (!currentDeck) return 0;
+    const deckCard = currentDeck.cards.find(dc => dc.card.id === cardId);
+    return deckCard?.quantity || 0;
+  };
+
+  const handleAddCard = (card: Card) => {
+    if (selectForDeck) {
+      addCardToDeck(selectForDeck, card);
+    }
+  };
+
+  const handleRemoveCard = (card: Card) => {
+    if (selectForDeck) {
+      removeCardFromDeck(selectForDeck, card.id);
+    }
+  };
+
+  const renderCard = ({ item }: { item: Card }) => {
+    // Show deck controls when building deck, but not when specifically selecting leader/base
+    const isDeckBuildingMode = !!selectForDeck && filterType !== 'Leader' && filterType !== 'Base';
+    // Disable image modal when selecting leader or base
+    const disableModal = filterType === 'Leader' || filterType === 'Base';
+    
+    return (
+      <CardTile 
+        card={item} 
+        size="medium" 
+        showPrice
+        showDeckControls={isDeckBuildingMode}
+        onAddCard={handleAddCard}
+        onRemoveCard={handleRemoveCard}
+        currentQuantity={isDeckBuildingMode ? getCardQuantity(item.id) : undefined}
+        disableImageModal={disableModal}
+        onPress={disableModal ? handleCardPress : undefined}
+      />
+    );
+  };
+
+  // Group bases by HP for collapsible sections
+  const groupBases = (baseCards: Card[]) => {
+    const standard = baseCards.filter(card => card.hp === 30);
+    const unique = baseCards.filter(card => card.hp !== 30);
+    return { standard, unique };
+  };
+
+  // Render grouped bases with collapsible sections
+  const renderGroupedBases = () => {
+    const { standard, unique } = groupBases(cards);
+    
+    return (
+      <ScrollView 
+        style={styles.basesContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        {renderHeader()}
+        {/* Standard Bases */}
+        <List.Section>
+          <List.Accordion
+            title={`Standard (${standard.length})`}
+            expanded={standardBasesExpanded}
+            onPress={() => setStandardBasesExpanded(!standardBasesExpanded)}
+            style={{ backgroundColor: theme.colors.surface }}
+          >
+            <View style={styles.basesGrid}>
+              {standard.map((card) => (
+                <View key={card.id} style={styles.baseCardWrapper}>
+                  {renderCard({ item: card })}
+                </View>
+              ))}
+            </View>
+          </List.Accordion>
+        </List.Section>
+
+        {/* Unique Bases */}
+        <List.Section>
+          <List.Accordion
+            title={`Unique (${unique.length})`}
+            expanded={uniqueBasesExpanded}
+            onPress={() => setUniqueBasesExpanded(!uniqueBasesExpanded)}
+            style={{ backgroundColor: theme.colors.surface }}
+          >
+            <View style={styles.basesGrid}>
+              {unique.map((card) => (
+                <View key={card.id} style={styles.baseCardWrapper}>
+                  {renderCard({ item: card })}
+                </View>
+              ))}
+            </View>
+          </List.Accordion>
+        </List.Section>
+      </ScrollView>
+    );
+  };
 
   const renderHeader = () => (
     <View style={styles.filtersContainer}>
@@ -272,6 +410,8 @@ export function HomeScreen() {
           actionLabel="Clear Filters"
           onAction={() => removeFilter('all')}
         />
+      ) : filterType === 'Base' ? (
+        renderGroupedBases()
       ) : (
         <FlatList
           data={cards}
@@ -346,6 +486,19 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: 20,
     alignItems: 'center',
+  },
+  basesContainer: {
+    flex: 1,
+  },
+  basesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 4,
+    paddingBottom: 16,
+  },
+  baseCardWrapper: {
+    width: '50%',
+    padding: 4,
   },
 });
 

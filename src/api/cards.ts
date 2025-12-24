@@ -141,6 +141,7 @@ function convertSwudbCard(swudbCard: SwudbCardResponse): Card {
       currency: 'USD',
       lastUpdated: swudbCard.priceChangeTime || new Date().toISOString(),
     } : undefined,
+    isUnique: swudbCard.isUnique || false,
   };
 }
 

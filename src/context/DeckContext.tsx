@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Deck, Card, DeckCard } from '../types';
-import { STORAGE_KEYS, DECK_LIMITS } from '../utils/constants';
+import { STORAGE_KEYS, DECK_LIMITS, getMaxCopiesForCard } from '../utils/constants';
 
 interface DeckContextType {
   decks: Deck[];
@@ -106,8 +106,9 @@ export function DeckProvider({ children }: { children: ReactNode }) {
 
         const existingCard = deck.cards.find((dc) => dc.card.id === card.id);
         const currentCount = existingCard?.quantity || 0;
+        const maxCopies = getMaxCopiesForCard(card.name);
 
-        if (currentCount >= DECK_LIMITS.maxCopiesPerCard) {
+        if (currentCount >= maxCopies) {
           return deck;
         }
 

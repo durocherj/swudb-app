@@ -119,9 +119,15 @@ export function CardDetailsScreen() {
         {/* Card Title */}
         <View style={styles.titleSection}>
           <Text variant="headlineMedium" style={[styles.cardName, { color: theme.colors.onSurface }]}>
-            {card.name}
+            {card.isUnique && card.subtitle ? (
+              <>
+                {card.name}, <Text style={styles.italicSubtitle}>{card.subtitle}</Text>
+              </>
+            ) : (
+              card.name
+            )}
           </Text>
-          {card.subtitle && (
+          {card.subtitle && !card.isUnique && (
             <Text
               variant="titleMedium"
               style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
@@ -459,9 +465,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  italicSubtitle: {
+    fontStyle: 'italic',
+  },
   cardName: {
     fontWeight: '700',
     textAlign: 'center',
+  },
+  italicSubtitle: {
+    fontStyle: 'italic',
   },
   subtitle: {
     marginTop: 4,

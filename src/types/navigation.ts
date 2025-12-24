@@ -8,6 +8,7 @@ export type MainStackParamList = {
   Home: { 
     filterType?: 'Leader' | 'Base' | 'Unit' | 'Event' | 'Upgrade';
     selectForDeck?: string; // deck ID when selecting cards for a deck
+    searchQuery?: string; // pre-populated search query
   } | undefined;
   CardDetails: { card: Card };
   MyDecks: undefined;

@@ -80,7 +80,7 @@ export function SetDetailsScreen() {
     const owned = isInCollection(item.id);
     return (
       <View style={owned ? styles.ownedCard : undefined}>
-        <CardTile card={item} onPress={handleCardPress} size="medium" showPrice />
+        <CardTile card={item} size="medium" showPrice />
       </View>
     );
   };
